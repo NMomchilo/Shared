@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+artifacts/
+packages/*.nupkg
+packages/*.snupkg
+TestResults/
+*.trx

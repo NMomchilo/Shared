@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AccessControl.Client/AccessControl.Client.csproj" />
+    <Project Path="src/AccessControl.Contracts/AccessControl.Contracts.csproj" />
+    <Project Path="src/AdminManagement.Security/AdminManagement.Security.csproj" />
+    <Project Path="src/Common.Persistence/Common.Persistence.csproj" />
+    <Project Path="src/UserManagement.Client/UserManagement.Client.csproj" />
+    <Project Path="src/UserManagement.Contracts/UserManagement.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AccessControl.Client.Tests/AccessControl.Client.Tests.csproj" />
+    <Project Path="tests/ServerSupport.Tests/ServerSupport.Tests.csproj" />
+    <Project Path="tests/UserManagement.Client.Tests/UserManagement.Client.Tests.csproj" />
+  </Folder>
+</Solution>
