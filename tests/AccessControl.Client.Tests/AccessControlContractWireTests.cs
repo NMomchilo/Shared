@@ -13,22 +13,22 @@ public sealed class AccessControlContractWireTests
         Guid organization = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         Guid role = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         Guid entitlement = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
-        PolicyRequest policy = new("default", "customers", "GET", "/customers/{id}", false,
+        PolicyRequest policy = new("default", "GET", "/customers/{id}", false,
             [entitlement], organization);
-        EntitlementInfo info = new(entitlement, "default", organization, "customers.view", "View", true);
+        EntitlementInfo info = new(entitlement, "default", organization, "View", true);
         object[] contracts =
         [
             new CatalogEndpoint("GET", "/customers/{id}"),
-            new CatalogRegistrationRequest("default", organization, "customers", "Customers",
+            new CatalogRegistrationRequest("default", organization,
                 [new CatalogEndpoint("GET", "/customers/{id}")]),
-            new CatalogRegistrationResult(1, 2),
-            new CreateEntitlementRequest("default", organization, "customers.view", "View"),
-            new DecisionRequest("oid", "customers", "GET", "/customers/{id}", "default", organization,
+            new CatalogRegistrationResult( 2),
+            new CreateEntitlementRequest("default", organization, "View"),
+            new DecisionRequest("oid", "GET", "/customers/{id}", "default", organization,
                 [role], false, true),
             new DecisionResponse(true, "admin", true),
             info,
             new EntitlementPageResponse([info], 1, 20, 1),
-            new PolicyKeyRequest("default", "customers", "GET", "/customers/{id}", organization),
+            new PolicyKeyRequest("default", "GET", "/customers/{id}", organization),
             policy,
             new PolicyPageResponse([policy], 1, 20, 1),
             new RoleEntitlementsRequest("default", role, [entitlement], organization),
@@ -49,8 +49,8 @@ public sealed class AccessControlContractWireTests
     public void OrganizationScopedWrites_RejectMissingOrganizationId()
     {
         Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<PolicyRequest>(
-            """{"tenantId":"default","module":"customers","httpMethod":"GET","routeTemplate":"/customers/{id}","isPublic":true,"requiredEntitlementIds":[]}""", WebJson));
+            """{"tenantId":"default","httpMethod":"GET","routeTemplate":"/customers/{id}","isPublic":true,"requiredEntitlementIds":[]}""", WebJson));
         Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<CreateEntitlementRequest>(
-            """{"tenantId":"default","code":"customers.view","displayName":"View"}""", WebJson));
+            """{"tenantId":"default","displayName":"View"}""", WebJson));
     }
 }

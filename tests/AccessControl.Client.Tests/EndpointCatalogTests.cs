@@ -22,11 +22,11 @@ public sealed class EndpointCatalogTests
         RouteEndpointBuilder health = new(_ => Task.CompletedTask, RoutePatternFactory.Parse("/health"), 0);
         health.Metadata.Add(new HttpMethodMetadata(["GET"]));
         IReadOnlyList<EndpointCatalogEntry> entries = EndpointCatalog.Build([builder.Build(), health.Build()],
-            "customers", ["/health"]);
+            ["/health"]);
 
         Assert.Equal(2, entries.Count);
-        Assert.Contains(new EndpointCatalogEntry("customers", "GET", "/customers/{id}"), entries);
-        Assert.Contains(new EndpointCatalogEntry("customers", "POST", "/customers/{id}"), entries);
+        Assert.Contains(new EndpointCatalogEntry( "GET", "/customers/{id}"), entries);
+        Assert.Contains(new EndpointCatalogEntry( "POST", "/customers/{id}"), entries);
     }
 
     [Fact]
@@ -39,10 +39,10 @@ public sealed class EndpointCatalogTests
         RouteEndpointBuilder methodless = new(_ => Task.CompletedTask, RoutePatternFactory.Parse("/internal"), 0);
 
         Assert.Throws<InvalidOperationException>(() => EndpointCatalog.Build(
-            [first.Build(), duplicate.Build(), methodless.Build()], "customers"));
+            [first.Build(), duplicate.Build(), methodless.Build()]));
         RouteEndpointBuilder emptyMethods = new(_ => Task.CompletedTask, RoutePatternFactory.Parse("/empty"), 0);
         emptyMethods.Metadata.Add(new HttpMethodMetadata([]));
-        Assert.Throws<InvalidOperationException>(() => EndpointCatalog.Build([emptyMethods.Build()], "customers"));
+        Assert.Throws<InvalidOperationException>(() => EndpointCatalog.Build([emptyMethods.Build()]));
     }
 
     [Fact]
@@ -63,11 +63,11 @@ public sealed class EndpointCatalogTests
         route.Metadata.Add(new HttpMethodMetadata(["GET"]));
         await EndpointCatalog.RegisterAsync([route.Build()], new AccessControlClientOptions
         {
-            Module = "customers", ApiKey = "existing-access-key"
+            ApiKey = "existing-access-key"
         }, new AccessControlCatalogRegistrationOptions
         {
             TenantId = "default", UnitOrganizationId = Guid.NewGuid(),
-            UnitOrganizationName = "Customers", ModuleName = "Customers"
+            UnitOrganizationName = "Customers"
         }, "existing-user-key", users, access);
 
         Assert.Equal(["users:existing-user-key", "access:existing-access-key"], calls);

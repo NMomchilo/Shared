@@ -26,14 +26,14 @@ public sealed class HttpAccessControlDecisionClient(IHttpClientFactory clientFac
             !string.IsNullOrWhiteSpace(bearer.Parameter))
             message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearer.Parameter);
         Stopwatch timer = Stopwatch.StartNew();
-        logger.LogDebug("Sending decision request for {Module} {Method} {Route}", request.Module, request.HttpMethod, request.RouteTemplate);
+        logger.LogDebug("Sending decision request for {Method} {Route}", request.HttpMethod, request.RouteTemplate);
         using HttpResponseMessage response = await client.SendAsync(message, cancellationToken);
-        logger.LogDebug("Decision service responded with {StatusCode} in {ElapsedMs} ms for {Module} {Method} {Route}",
-            (int)response.StatusCode, timer.ElapsedMilliseconds, request.Module, request.HttpMethod, request.RouteTemplate);
+        logger.LogDebug("Decision service responded with {StatusCode} in {ElapsedMs} ms for {Method} {Route}",
+            (int)response.StatusCode, timer.ElapsedMilliseconds, request.HttpMethod, request.RouteTemplate);
         if (!response.IsSuccessStatusCode)
         {
-            logger.LogWarning("Decision service HTTP failure {StatusCode} for {Module} {Method} {Route}",
-                (int)response.StatusCode, request.Module, request.HttpMethod, request.RouteTemplate);
+            logger.LogWarning("Decision service HTTP failure {StatusCode} for {Method} {Route}",
+                (int)response.StatusCode, request.HttpMethod, request.RouteTemplate);
         }
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<DecisionResponse>(cancellationToken)

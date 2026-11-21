@@ -267,7 +267,7 @@ public sealed class UserResolutionCacheTests
         }
     }
 
-    private static UserIdentityResponse Response(string code, string tenantId = "default") =>
+    private static UserIdentityResponse Response(string roleName, string tenantId = "default") =>
         new(Guid.NewGuid(), tenantId, OrganizationId, "Alpha", true,
-            [new UserRoleInfo(code == "reader" ? Reader : Manager, code, code)]);
+            [new UserRoleInfo(roleName == "reader" ? Reader : Manager, roleName)]);
 }

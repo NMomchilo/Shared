@@ -39,8 +39,7 @@ public sealed class HttpUserManagementClient(IHttpClientFactory clientFactory,
             resolved.UnitOrganizationId != request.UnitOrganizationId ||
             string.IsNullOrWhiteSpace(resolved.UnitOrganizationName) ||
             resolved.Roles is null || resolved.Roles.Count > 16 ||
-            resolved.Roles.Any(role => role.RoleId == Guid.Empty || string.IsNullOrWhiteSpace(role.Code) ||
-                role.Code.Length > 64 || string.IsNullOrWhiteSpace(role.DisplayName)))
+            resolved.Roles.Any(role => role.RoleId == Guid.Empty || string.IsNullOrWhiteSpace(role.DisplayName)))
         {
             throw new InvalidOperationException("User Management returned an invalid response.");
         }

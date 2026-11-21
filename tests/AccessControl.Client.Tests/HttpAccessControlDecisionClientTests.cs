@@ -29,7 +29,7 @@ public sealed class HttpAccessControlDecisionClientTests
         HttpAccessControlDecisionClient client = CreateClient(handler);
 
         DecisionResponse decision = await client.DecideAsync(
-            new DecisionRequest("oid", "customers", "GET", "/customers/{id}", "tenant-a", Organization),
+            new DecisionRequest("oid", "GET", "/customers/{id}", "tenant-a", Organization),
             CancellationToken.None);
 
         Assert.True(decision.Permit);
@@ -42,7 +42,7 @@ public sealed class HttpAccessControlDecisionClientTests
     [Fact]
     public async Task DecideAsync_RejectsFailedAndEmptyResponsesAsync()
     {
-        DecisionRequest request = new("oid", "customers", "GET", "/customers/{id}", "tenant-a", Organization);
+        DecisionRequest request = new("oid", "GET", "/customers/{id}", "tenant-a", Organization);
         HttpAccessControlDecisionClient unavailable = CreateClient(new RecordingHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable))));
         HttpAccessControlDecisionClient empty = CreateClient(new RecordingHandler((_, _) =>

@@ -66,7 +66,7 @@ public sealed class UserManagementRevisionPollerTests
             Interlocked.Increment(ref Calls);
             return Task.FromResult(new UserIdentityResponse(Guid.NewGuid(), request.TenantId,
                 request.UnitOrganizationId, "Alpha", true,
-                [new UserRoleInfo(CurrentRoleId, "reader", "Reader")]));
+                [new UserRoleInfo(CurrentRoleId, "Reader")]));
         }
     }
 

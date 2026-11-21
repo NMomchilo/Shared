@@ -41,9 +41,8 @@ public sealed class UserManagementMiddlewareTests
         Assert.Equal(Oid, client.Request?.ObjectId);
         Assert.Equal("default", client.Request?.TenantId);
         Assert.Equal(OrganizationId, client.Request?.UnitOrganizationId);
-        Assert.Contains(context.User.Claims, claim => claim.Type == UserManagementClaims.Role && claim.Value == "reader");
         Assert.Contains(context.User.Claims, claim => claim.Type == UserManagementClaims.RoleId && claim.Value == Reader.ToString("D"));
-        Assert.True(context.User.IsInRole("reader"));
+        Assert.True(context.User.IsInRole(Reader.ToString("D")));
         Assert.Contains(context.User.Claims, claim => claim.Type == UserManagementClaims.UserId);
         Assert.Contains(context.User.Claims, claim => claim.Type == UserManagementClaims.UnitOrganizationId &&
             claim.Value == OrganizationId.ToString("D"));
@@ -116,7 +115,7 @@ public sealed class UserManagementMiddlewareTests
         await sut.InvokeAsync(context);
 
         Assert.Equal(403, context.Response.StatusCode);
-        Assert.DoesNotContain(context.User.Claims, claim => claim.Type == UserManagementClaims.Role);
+        Assert.DoesNotContain(context.User.Claims, claim => claim.Type == UserManagementClaims.RoleId);
     }
 
     [Fact]
@@ -262,7 +261,7 @@ public sealed class UserManagementMiddlewareTests
             Request = request;
             return Task.FromResult(new UserIdentityResponse(Guid.NewGuid(), request.TenantId,
                 request.UnitOrganizationId, "Alpha", active,
-                [new UserRoleInfo(Reader, "reader", "Reader")]));
+                [new UserRoleInfo(Reader, "Reader")]));
         }
     }
 
@@ -297,6 +296,6 @@ public sealed class UserManagementMiddlewareTests
             CancellationToken cancellationToken) => Task.FromResult(new UserIdentityResponse(Guid.NewGuid(),
             wrongTenant ? "another-tenant" : request.TenantId,
             wrongTenant ? request.UnitOrganizationId : Guid.NewGuid(), "Alpha", true,
-            [new UserRoleInfo(Reader, "reader", "Reader")]));
+            [new UserRoleInfo(Reader, "Reader")]));
     }
 }

@@ -24,7 +24,7 @@ public sealed class HttpUserManagementClientTests
 
         UserIdentityResponse response = await sut.ResolveAsync(request, CancellationToken.None);
 
-        Assert.Equal("reader", response.Roles.Single().Code);
+        Assert.Equal("Reader", response.Roles.Single().DisplayName);
         Assert.Equal(HttpMethod.Post, handler.Method);
         Assert.Equal("/v1/users/resolve", handler.Path);
         Assert.Equal(request.ObjectId, handler.ObjectId);
@@ -110,7 +110,7 @@ public sealed class HttpUserManagementClientTests
             {
                 Content = JsonContent.Create(new UserIdentityResponse(Guid.NewGuid(), body!.TenantId,
                     body.UnitOrganizationId, "Alpha", true,
-                    [new UserRoleInfo(Guid.Parse("22222222-2222-2222-2222-222222222222"), "reader", "Reader")]))
+                    [new UserRoleInfo(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Reader")]))
             };
         }
     }

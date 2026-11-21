@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>AdminManagement.Security</PackageId>
-    <Version>0.12.0</Version>
+    <Version>0.13.0</Version>
     <Description>Shared Entra administrator authentication and actor identity for authorization services.</Description>
   </PropertyGroup>
   <ItemGroup>

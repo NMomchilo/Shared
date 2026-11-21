@@ -62,7 +62,6 @@ public sealed class AccessControlMiddlewareTests
 
         Assert.Equal("alice", client.Request?.SubjectId);
         Assert.Equal("tenant-a", client.Request?.TenantId);
-        Assert.Equal("customers", client.Request?.Module);
         Assert.Equal(Organization, client.Request?.UnitOrganizationId);
         Assert.Equal([Advisor], client.Request?.RoleIds);
     }
@@ -112,7 +111,7 @@ public sealed class AccessControlMiddlewareTests
     {
         CapturingDecisionClient client = new();
         AccessControlMiddleware sut = new(_ => Task.CompletedTask, client,
-            Options.Create(new AccessControlClientOptions { Module = "customers", RoleIdClaimType = "access_control_role_id",
+            Options.Create(new AccessControlClientOptions { RoleIdClaimType = "access_control_role_id",
                 RoleIdentityAuthenticationType = "UserManagement" }),
             NullLogger<AccessControlMiddleware>.Instance);
         DefaultHttpContext context = CreateContext();
@@ -134,7 +133,7 @@ public sealed class AccessControlMiddlewareTests
         AccessControlMiddleware sut = new(_ => Task.CompletedTask, client,
             Options.Create(new AccessControlClientOptions
             {
-                Module = "customers", RoleIdentityAuthenticationType = "UserManagement"
+                RoleIdentityAuthenticationType = "UserManagement"
             }), NullLogger<AccessControlMiddleware>.Instance);
         DefaultHttpContext context = CreateContext();
         context.User.AddIdentity(new ClaimsIdentity([
@@ -273,7 +272,7 @@ public sealed class AccessControlMiddlewareTests
     private static AccessControlMiddleware CreateMiddleware(IAccessControlDecisionClient client, RequestDelegate? next = null,
         string[]? excludedPaths = null) =>
         new(next ?? (_ => Task.CompletedTask), client,
-            Options.Create(new AccessControlClientOptions { Module = "customers", ExcludedPaths = excludedPaths ?? [] }),
+            Options.Create(new AccessControlClientOptions { ExcludedPaths = excludedPaths ?? [] }),
             NullLogger<AccessControlMiddleware>.Instance);
 
     private static DefaultHttpContext CreateContext(string route = "/customers/{id}")

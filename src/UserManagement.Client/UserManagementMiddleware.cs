@@ -115,7 +115,7 @@ public sealed class UserManagementMiddleware(RequestDelegate next, IUserManageme
         }
 
         ClaimsIdentity identity = new([], UserManagementClaims.IdentityAuthenticationType, ClaimTypes.Name,
-            UserManagementClaims.Role);
+            UserManagementClaims.RoleId);
         identity.AddClaim(new Claim(UserManagementClaims.UserId, resolved.UserId.ToString("D")));
         identity.AddClaim(new Claim(UserManagementClaims.TenantId, resolved.TenantId));
         identity.AddClaim(new Claim(UserManagementClaims.UnitOrganizationId, resolved.UnitOrganizationId.ToString("D")));
@@ -125,7 +125,6 @@ public sealed class UserManagementMiddleware(RequestDelegate next, IUserManageme
         foreach (UserRoleInfo role in resolved.Roles)
         {
             identity.AddClaim(new Claim(UserManagementClaims.RoleId, role.RoleId.ToString("D")));
-            identity.AddClaim(new Claim(UserManagementClaims.Role, role.Code));
         }
 
         context.User.AddIdentity(identity);

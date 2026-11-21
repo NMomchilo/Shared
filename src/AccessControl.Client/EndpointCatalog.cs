@@ -6,18 +6,18 @@ using Microsoft.AspNetCore.Routing;
 
 namespace AccessControl.Client;
 
-public sealed record EndpointCatalogEntry(string Module, string HttpMethod, string RouteTemplate);
+public sealed record EndpointCatalogEntry(string HttpMethod, string RouteTemplate);
 
 public static class EndpointCatalog
 {
-    public static IReadOnlyList<EndpointCatalogEntry> Build(IEnumerable<Endpoint> endpoints, string module,
+    public static IReadOnlyList<EndpointCatalogEntry> Build(IEnumerable<Endpoint> endpoints,
         IEnumerable<string>? excludedPaths = null)
     {
         HashSet<string> exclusions = (excludedPaths ?? []).Select(EndpointKey.NormalizeRoute)
             .ToHashSet(StringComparer.Ordinal);
         return endpoints.OfType<RouteEndpoint>()
             .SelectMany(endpoint => GetMethods(endpoint)
-                .Select(method => new EndpointCatalogEntry(module, EndpointKey.NormalizeMethod(method),
+                .Select(method => new EndpointCatalogEntry(EndpointKey.NormalizeMethod(method),
                     EndpointKey.NormalizeRoute(endpoint.RoutePattern.RawText ??
                         throw new InvalidOperationException("Route has no template.")))))
             .Where(entry => !exclusions.Contains(entry.RouteTemplate))
@@ -39,7 +39,7 @@ public static class EndpointCatalog
         HttpClient userManagementClient, HttpClient accessControlClient,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<EndpointCatalogEntry> entries = Build(endpoints, options.Module, options.ExcludedPaths);
+        IReadOnlyList<EndpointCatalogEntry> entries = Build(endpoints, options.ExcludedPaths);
         if (entries.Count > 1000) throw new InvalidOperationException("Endpoint catalog exceeds 1000 routes.");
 
         using HttpRequestMessage organizationRequest = new(HttpMethod.Post, "v1/registrations/unit-organizations")
@@ -59,7 +59,7 @@ public static class EndpointCatalog
         using HttpRequestMessage catalogRequest = new(HttpMethod.Post, "v1/registrations/catalog")
         {
             Content = JsonContent.Create(new CatalogRegistrationRequest(registration.TenantId,
-                registration.UnitOrganizationId, options.Module, registration.ModuleName,
+                registration.UnitOrganizationId,
                 entries.Select(entry => new CatalogEndpoint(entry.HttpMethod, entry.RouteTemplate)).ToArray()))
         };
         catalogRequest.Headers.Add("X-Access-Control-Key", options.ApiKey);

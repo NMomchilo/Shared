@@ -22,7 +22,6 @@ public sealed class AccessControlExtensionsTests
         using ServiceProvider provider = new ServiceCollection().AddAccessControl(valid).BuildServiceProvider();
 
         AccessControlClientOptions options = provider.GetRequiredService<IOptions<AccessControlClientOptions>>().Value;
-        Assert.Equal("customers", options.Module);
         Assert.Equal("decision-key", options.ApiKey);
         Assert.Equal("UserManagement", options.RoleIdentityAuthenticationType);
         Assert.IsType<HttpAccessControlDecisionClient>(provider.GetRequiredService<IAccessControlDecisionClient>());
@@ -39,10 +38,7 @@ public sealed class AccessControlExtensionsTests
         ServiceCollection services = new();
         services.AddLogging();
         services.AddSingleton<IAccessControlDecisionClient>(decisionClient);
-        services.AddSingleton<IOptions<AccessControlClientOptions>>(Options.Create(new AccessControlClientOptions
-        {
-            Module = "customers"
-        }));
+        services.AddSingleton<IOptions<AccessControlClientOptions>>(Options.Create(new AccessControlClientOptions()));
         using ServiceProvider provider = services.BuildServiceProvider();
         ApplicationBuilder app = new(provider);
         bool endpointRan = false;
@@ -78,7 +74,7 @@ public sealed class AccessControlExtensionsTests
         services.AddSingleton<IHostEnvironment>(new TestHostEnvironment());
         services.AddSingleton<IOptions<AccessControlClientOptions>>(Options.Create(new AccessControlClientOptions
         {
-            ServiceUrl = "https://access.example/", ApiKey = "access-key", Module = "customers"
+            ServiceUrl = "https://access.example/", ApiKey = "access-key"
         }));
         services.AddSingleton<IHttpClientFactory>(new RecordingHttpClientFactory(calls));
         using ServiceProvider provider = services.BuildServiceProvider();
@@ -89,7 +85,7 @@ public sealed class AccessControlExtensionsTests
         await routes.RegisterAccessControlCatalogAsync(new AccessControlCatalogRegistrationOptions
         {
             TenantId = "default", UnitOrganizationId = Guid.NewGuid(),
-            UnitOrganizationName = "Customers", ModuleName = "Customers"
+            UnitOrganizationName = "Customers"
         });
 
         Assert.Equal(["http://localhost:5220/v1/registrations/unit-organizations",
@@ -110,7 +106,7 @@ public sealed class AccessControlExtensionsTests
             new AccessControlCatalogRegistrationOptions
             {
                 TenantId = "default", UnitOrganizationId = Guid.NewGuid(),
-                UnitOrganizationName = "Customers", ModuleName = "Customers"
+                UnitOrganizationName = "Customers"
             }));
     }
 
@@ -160,7 +156,6 @@ public sealed class AccessControlExtensionsTests
         new Dictionary<string, string?>
         {
             ["AccessControl:ServiceUrl"] = url,
-            ["AccessControl:ApiKey"] = "decision-key",
-            ["AccessControl:Module"] = "customers"
+            ["AccessControl:ApiKey"] = "decision-key"
         }).Build();
 }

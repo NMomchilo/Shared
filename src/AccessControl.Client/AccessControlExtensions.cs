@@ -17,7 +17,6 @@ public static class AccessControlExtensions
             .Validate(options => Uri.TryCreate(options.ServiceUrl, UriKind.Absolute, out Uri? uri) &&
                 uri.Scheme == Uri.UriSchemeHttps &&
                 !string.IsNullOrWhiteSpace(options.ApiKey) &&
-                !string.IsNullOrWhiteSpace(options.Module) &&
                 !string.IsNullOrWhiteSpace(options.TenantClaimType) &&
                 !string.IsNullOrWhiteSpace(options.DefaultTenantId) &&
                 !string.IsNullOrWhiteSpace(options.RoleIdClaimType) &&
@@ -26,7 +25,7 @@ public static class AccessControlExtensions
                 !string.IsNullOrWhiteSpace(options.UnitAdminClaimType) &&
                 options.ExcludedPaths is not null &&
                 options.TimeoutSeconds > 0,
-                "AccessControl requires HTTPS ServiceUrl, ApiKey, Module, tenant settings and a positive timeout.")
+                "AccessControl requires HTTPS ServiceUrl, ApiKey, tenant settings and a positive timeout.")
             .ValidateOnStart();
         services.AddHttpClient(nameof(HttpAccessControlDecisionClient), (provider, client) =>
             client.Timeout = TimeSpan.FromSeconds(provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AccessControlClientOptions>>().Value.TimeoutSeconds));
@@ -46,7 +45,7 @@ public static class AccessControlExtensions
     {
         ArgumentNullException.ThrowIfNull(registration);
         if (!IsValidRegistration(registration))
-            throw new ArgumentException("Registration requires a tenant, unit organization ID/name, and module name.",
+            throw new ArgumentException("Registration requires a tenant and unit organization ID/name.",
                 nameof(registration));
         AccessControlClientOptions options = app.ServiceProvider.GetRequiredService<IOptions<AccessControlClientOptions>>().Value;
         IConfiguration configuration = app.ServiceProvider.GetRequiredService<IConfiguration>();
@@ -72,14 +71,13 @@ public static class AccessControlExtensions
         await EndpointCatalog.RegisterAsync(app.DataSources.SelectMany(source => source.Endpoints), options,
             registration, userManagementKey, users, access, cancellationToken);
         app.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("AccessControl.EndpointCatalog")
-            .LogInformation("Registered endpoint catalog for {TenantId} {UnitOrganizationId} {Module}",
-                registration.TenantId, registration.UnitOrganizationId, options.Module);
+            .LogInformation("Registered endpoint catalog for {TenantId} {UnitOrganizationId}",
+                registration.TenantId, registration.UnitOrganizationId);
     }
 
     private static bool IsValidRegistration(AccessControlCatalogRegistrationOptions registration) =>
         !string.IsNullOrWhiteSpace(registration.TenantId) && registration.TenantId.Length <= 128 &&
         registration.UnitOrganizationId != Guid.Empty &&
         !string.IsNullOrWhiteSpace(registration.UnitOrganizationName) &&
-        registration.UnitOrganizationName.Length <= 200 &&
-        !string.IsNullOrWhiteSpace(registration.ModuleName) && registration.ModuleName.Length <= 200;
+        registration.UnitOrganizationName.Length <= 200;
 }

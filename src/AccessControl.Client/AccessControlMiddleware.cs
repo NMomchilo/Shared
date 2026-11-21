@@ -83,10 +83,10 @@ public sealed class AccessControlMiddleware(
                 }
             }
         }
-        DecisionRequest request = new(subjectId, settings.Module, method, route, tenantId,
+        DecisionRequest request = new(subjectId, method, route, tenantId,
             unitOrganizationId, roleIds, isSuperAdmin, isUnitAdmin);
-        logger.LogDebug("Requesting decision for {TenantId} {Module} {Method} {Route}; authenticated {Authenticated}, trace {TraceId}",
-            tenantId, settings.Module, method, route, authenticated, context.TraceIdentifier);
+        logger.LogDebug("Requesting decision for {TenantId} {Method} {Route}; authenticated {Authenticated}, trace {TraceId}",
+            tenantId, method, route, authenticated, context.TraceIdentifier);
 
         DecisionResponse decision;
         try
@@ -95,23 +95,23 @@ public sealed class AccessControlMiddleware(
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or InvalidOperationException or System.Text.Json.JsonException)
         {
-            logger.LogError(exception, "Decision service unavailable for {Module} {Method} {Route}; trace {TraceId}",
-                settings.Module, method, route, context.TraceIdentifier);
+            logger.LogError(exception, "Decision service unavailable for {Method} {Route}; trace {TraceId}",
+                method, route, context.TraceIdentifier);
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             return;
         }
 
         if (decision.Permit)
         {
-            logger.LogInformation("Access permitted for {Module} {Method} {Route}; trace {TraceId}", settings.Module, method, route, context.TraceIdentifier);
+            logger.LogInformation("Access permitted for {Method} {Route}; trace {TraceId}", method, route, context.TraceIdentifier);
             await next(context);
             return;
         }
 
         context.Response.StatusCode = decision.AuthenticationRequired
             ? StatusCodes.Status401Unauthorized : StatusCodes.Status403Forbidden;
-        logger.LogInformation("Access denied with status {StatusCode} for {Module} {Method} {Route}; trace {TraceId}",
-            context.Response.StatusCode, settings.Module, method, route, context.TraceIdentifier);
+        logger.LogInformation("Access denied with status {StatusCode} for {Method} {Route}; trace {TraceId}",
+            context.Response.StatusCode, method, route, context.TraceIdentifier);
     }
 
     private static bool HasDuty(ClaimsIdentity identity, string claimType)
