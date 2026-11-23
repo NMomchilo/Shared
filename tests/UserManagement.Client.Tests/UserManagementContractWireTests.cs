@@ -13,30 +13,30 @@ public sealed class UserManagementContractWireTests
         Guid organization = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         Guid role = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         Guid user = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
-        UserRoleAssignmentInfo assignment = new(role, "Reviewer", true);
+        UserRoleAssignmentInfo assignment = new(role, "Reviewer", true, "reviewer");
         UserMembershipSummary membership = new(organization, "Operations", true, [assignment]);
         UserSummary summary = new(user, "entra-oid", "Example User", "user@example.test", true, false,
             [membership]);
         object[] contracts =
         [
             new AdminAccessInfo(true, false, [organization], true),
-            new CreateRoleRequest("default", organization, "Reviewer"),
+            new CreateRoleRequest("default", organization, "Reviewer", "reviewer"),
             new CreateUnitOrganizationRequest(organization, "default", "Operations"),
             new CreateUserRequest("Example User", "user@example.test", [role]),
             new PagedResult<UserSummary>([summary], 1, 1, 20),
             new ReplaceRolesRequest([role]),
-            new RoleInfo(role, "default", organization, "Reviewer", true),
+            new RoleInfo(role, "default", organization, "Reviewer", true, "reviewer"),
             new SetActiveRequest(false),
             new UnitOrganizationInfo(organization, "default", "Operations"),
             new UpdateRoleRequest("Senior Reviewer"),
             new UpdateUnitOrganizationRequest("New Operations"),
             new UserIdentityRequest("default", organization, "entra-oid"),
             new UserIdentityResponse(user, "default", organization, "Operations", true,
-                [new UserRoleInfo(role, "Reviewer")], false, true),
+                [new UserRoleInfo(role, "Reviewer", "reviewer")], false, true),
             membership,
             assignment,
             new UserProfileRequest("Example User", "user@example.test"),
-            new UserRoleInfo(role, "Reviewer"),
+            new UserRoleInfo(role, "Reviewer", "reviewer"),
             summary
         ];
 

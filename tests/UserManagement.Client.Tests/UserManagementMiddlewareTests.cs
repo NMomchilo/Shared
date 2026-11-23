@@ -261,7 +261,7 @@ public sealed class UserManagementMiddlewareTests
             Request = request;
             return Task.FromResult(new UserIdentityResponse(Guid.NewGuid(), request.TenantId,
                 request.UnitOrganizationId, "Alpha", active,
-                [new UserRoleInfo(Reader, "Reader")]));
+                [new UserRoleInfo(Reader, "Reader", "Reader")]));
         }
     }
 
@@ -296,6 +296,6 @@ public sealed class UserManagementMiddlewareTests
             CancellationToken cancellationToken) => Task.FromResult(new UserIdentityResponse(Guid.NewGuid(),
             wrongTenant ? "another-tenant" : request.TenantId,
             wrongTenant ? request.UnitOrganizationId : Guid.NewGuid(), "Alpha", true,
-            [new UserRoleInfo(Reader, "Reader")]));
+            [new UserRoleInfo(Reader, "Reader", "Reader")]));
     }
 }

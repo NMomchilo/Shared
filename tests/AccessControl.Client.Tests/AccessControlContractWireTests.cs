@@ -15,14 +15,14 @@ public sealed class AccessControlContractWireTests
         Guid entitlement = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
         PolicyRequest policy = new("default", "GET", "/customers/{id}", false,
             [entitlement], organization);
-        EntitlementInfo info = new(entitlement, "default", organization, "View", true);
+        EntitlementInfo info = new(entitlement, "default", organization, "View", true, "customers.view");
         object[] contracts =
         [
             new CatalogEndpoint("GET", "/customers/{id}"),
             new CatalogRegistrationRequest("default", organization,
                 [new CatalogEndpoint("GET", "/customers/{id}")]),
             new CatalogRegistrationResult( 2),
-            new CreateEntitlementRequest("default", organization, "View"),
+            new CreateEntitlementRequest("default", organization, "View", "customers.view"),
             new DecisionRequest("oid", "GET", "/customers/{id}", "default", organization,
                 [role], false, true),
             new DecisionResponse(true, "admin", true),

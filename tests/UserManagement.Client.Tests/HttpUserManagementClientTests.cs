@@ -110,7 +110,7 @@ public sealed class HttpUserManagementClientTests
             {
                 Content = JsonContent.Create(new UserIdentityResponse(Guid.NewGuid(), body!.TenantId,
                     body.UnitOrganizationId, "Alpha", true,
-                    [new UserRoleInfo(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Reader")]))
+                    [new UserRoleInfo(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Reader", "Reader")]))
             };
         }
     }

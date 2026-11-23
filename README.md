@@ -11,7 +11,7 @@ This repository owns six .NET 10 packages used by the Access Control and User Ma
 | `Common.Persistence` | Validated write actor and shared entity metadata for the two services |
 | `AdminManagement.Security` | Entra administrator authentication and actor identity for the two services |
 
-The client packages depend on their matching contracts packages. `AdminManagement.Security` depends on `Common.Persistence`. All six package IDs use version `0.13.0`. The two service support packages are for server applications; do not install them in browser or consuming API projects unless those projects actually need their server-side types. Version 0.13.0 removes role codes, entitlement codes, and modules from the wire contracts. Consumers must update together.
+The client packages depend on their matching contracts packages. `AdminManagement.Security` depends on `Common.Persistence`. All six package IDs use version `0.14.0`. The two service support packages are for server applications; do not install them in browser or consuming API projects unless those projects actually need their server-side types. Version 0.14.0 restores role and entitlement codes in the wire contracts; modules remain absent. Consumers must update together.
 
 ## Repository layout and local build
 
@@ -22,7 +22,7 @@ dotnet test Shared.slnx -c Release
 dotnet pack Shared.slnx -c Release -o packages
 ```
 
-The pack command writes all six `.nupkg` files to the ignored contents of the tracked `packages` directory. The service repositories reference all six Shared libraries by package ID and version `0.13.0`, including their tests and benchmarks. Copy the package files into each service repository's `.packages` directory and commit them there; neither solution references Shared source projects. Each service's `NuGet.config` maps these package IDs to its own `.packages` directory, so a clean GitHub checkout can restore without a sibling checkout or separate package download. When a private feed is available, update the source mapping and CI credentials instead. Do not commit feed credentials.
+The pack command writes all six `.nupkg` files to the ignored contents of the tracked `packages` directory. The service repositories reference all six Shared libraries by package ID and version `0.14.0`, including their tests and benchmarks. Copy the package files into each service repository's `.packages` directory and commit them there; neither solution references Shared source projects. Each service's `NuGet.config` maps these package IDs to its own `.packages` directory, so a clean GitHub checkout can restore without a sibling checkout or separate package download. When a private feed is available, update the source mapping and CI credentials instead. Do not commit feed credentials.
 
 After providing the package files, run each service suite from its own repository:
 

@@ -269,5 +269,5 @@ public sealed class UserResolutionCacheTests
 
     private static UserIdentityResponse Response(string roleName, string tenantId = "default") =>
         new(Guid.NewGuid(), tenantId, OrganizationId, "Alpha", true,
-            [new UserRoleInfo(roleName == "reader" ? Reader : Manager, roleName)]);
+            [new UserRoleInfo(roleName == "reader" ? Reader : Manager, roleName, roleName)]);
 }
