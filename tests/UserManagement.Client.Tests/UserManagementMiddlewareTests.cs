@@ -14,6 +14,21 @@ public sealed class UserManagementMiddlewareTests
     private static readonly Guid OrganizationId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
     [Fact]
+    public async Task InvokeAsync_UsesIngressHeadersWithoutGatewayClaimsAsync()
+    {
+        CapturingClient client = new();
+        DefaultHttpContext context = new();
+        context.User = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim("oid", Oid), new Claim("scp", "user_impersonation")], "jwt"));
+        context.Request.Headers["X-Unit-Organization-Id"] = OrganizationId.ToString("D");
+        context.Request.Headers["X-Unit-Organization-Name"] = "Alpha";
+
+        await Create(client).InvokeAsync(context);
+
+        Assert.Equal(OrganizationId, client.Request?.UnitOrganizationId);
+    }
+
+    [Fact]
     public async Task InvokeAsync_UnprovisionedUser_Returns403WithoutContinuingAsync()
     {
         bool continued = false;
@@ -168,7 +183,7 @@ public sealed class UserManagementMiddlewareTests
     }
 
     [Fact]
-    public async Task InvokeAsync_WithoutTrustedGatewayIdentity_DoesNotResolveAsync()
+    public async Task InvokeAsync_OrganizationClaimsWithoutHeaders_DoesNotResolveAsync()
     {
         CapturingClient client = new();
         DefaultHttpContext context = new();
@@ -182,13 +197,11 @@ public sealed class UserManagementMiddlewareTests
     }
 
     [Fact]
-    public async Task InvokeAsync_InvalidGatewayOrganizationId_DoesNotResolveAsync()
+    public async Task InvokeAsync_InvalidIngressOrganizationId_DoesNotResolveAsync()
     {
         CapturingClient client = new();
         DefaultHttpContext context = AuthenticatedContext(new Claim("oid", Oid));
-        ClaimsIdentity gateway = context.User.Identities.Single(identity => identity.AuthenticationType == "Gateway");
-        gateway.RemoveClaim(gateway.FindFirst("unit_organization_id")!);
-        gateway.AddClaim(new Claim("unit_organization_id", "invalid"));
+        context.Request.Headers["X-Unit-Organization-Id"] = "invalid";
         await Create(client).InvokeAsync(context);
         Assert.Equal(403, context.Response.StatusCode);
         Assert.Null(client.Request);
@@ -225,12 +238,11 @@ public sealed class UserManagementMiddlewareTests
     }
 
     [Fact]
-    public async Task InvokeAsync_DuplicateGatewayOrganizationClaims_DeniesBeforeResolutionAsync()
+    public async Task InvokeAsync_DuplicateIngressOrganizationHeaders_DeniesBeforeResolutionAsync()
     {
         CapturingClient client = new();
         DefaultHttpContext context = AuthenticatedContext(new Claim("oid", Oid));
-        context.User.Identities.Single(identity => identity.AuthenticationType == "Gateway")
-            .AddClaim(new Claim("unit_organization_id", Guid.NewGuid().ToString("D")));
+        context.Request.Headers.Append("X-Unit-Organization-Id", Guid.NewGuid().ToString("D"));
 
         await Create(client).InvokeAsync(context);
 
@@ -246,9 +258,8 @@ public sealed class UserManagementMiddlewareTests
     {
         DefaultHttpContext context = new();
         context.User = new ClaimsPrincipal(new ClaimsIdentity([claim, new Claim("scp", "user_impersonation")], "test"));
-        context.User.AddIdentity(new ClaimsIdentity([
-            new Claim("unit_organization_id", OrganizationId.ToString("D")),
-            new Claim("unit_organization_name", "Alpha")], "Gateway"));
+        context.Request.Headers["X-Unit-Organization-Id"] = OrganizationId.ToString("D");
+        context.Request.Headers["X-Unit-Organization-Name"] = "Alpha";
         return context;
     }
 

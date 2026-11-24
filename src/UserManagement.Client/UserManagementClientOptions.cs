@@ -7,9 +7,8 @@ public sealed class UserManagementClientOptions
     public string ApiKey { get; set; } = string.Empty;
     public string TenantClaimType { get; set; } = "tenant_id";
     public string DefaultTenantId { get; set; } = "default";
-    public string GatewayIdentityAuthenticationType { get; set; } = "Gateway";
-    public string UnitOrganizationIdClaimType { get; set; } = "unit_organization_id";
-    public string UnitOrganizationNameClaimType { get; set; } = "unit_organization_name";
+    public string UnitOrganizationIdHeaderName { get; set; } = "X-Unit-Organization-Id";
+    public string UnitOrganizationNameHeaderName { get; set; } = "X-Unit-Organization-Name";
     public string RequiredDelegatedScope { get; set; } = "user_impersonation";
     public int TimeoutSeconds { get; set; } = 5;
     public int MaximumCachedUsers { get; set; } = 10000;

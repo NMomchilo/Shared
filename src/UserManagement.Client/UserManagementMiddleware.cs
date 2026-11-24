@@ -48,19 +48,14 @@ public sealed class UserManagementMiddleware(RequestDelegate next, IUserManageme
             return;
         }
 
-        ClaimsIdentity[] gatewayIdentities = context.User.Identities.Where(identity =>
-            identity.IsAuthenticated && identity.AuthenticationType == options.Value.GatewayIdentityAuthenticationType)
-            .ToArray();
-        Claim[] idClaims = gatewayIdentities.Length == 1
-            ? gatewayIdentities[0].FindAll(options.Value.UnitOrganizationIdClaimType).ToArray() : [];
-        Claim[] nameClaims = gatewayIdentities.Length == 1
-            ? gatewayIdentities[0].FindAll(options.Value.UnitOrganizationNameClaimType).ToArray() : [];
-        string? organizationName = nameClaims.Length == 1 ? nameClaims[0].Value : null;
-        if (idClaims.Length != 1 || !Guid.TryParse(idClaims[0].Value, out Guid organizationId) ||
+        context.Request.Headers.TryGetValue(options.Value.UnitOrganizationIdHeaderName, out var idValues);
+        context.Request.Headers.TryGetValue(options.Value.UnitOrganizationNameHeaderName, out var nameValues);
+        string? organizationName = nameValues.Count == 1 ? nameValues[0]?.Trim() : null;
+        if (idValues.Count != 1 || !Guid.TryParse(idValues[0], out Guid organizationId) ||
             organizationId == Guid.Empty ||
-            string.IsNullOrWhiteSpace(organizationName) || organizationName.Trim().Length > 200)
+            string.IsNullOrWhiteSpace(organizationName) || organizationName.Length > 200)
         {
-            logger.LogWarning("Authenticated request lacks valid gateway organization context; trace {TraceId}",
+            logger.LogWarning("Authenticated request lacks valid ingress organization headers; trace {TraceId}",
                 context.TraceIdentifier);
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
