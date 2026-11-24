@@ -1,17 +1,18 @@
 # Shared authorization NuGets
 
-This repository owns six .NET 10 packages used by the Access Control and User Management services and by consuming APIs:
+This repository owns seven .NET 10 packages used by the Access Control and User Management services and by consuming APIs:
 
 | Package | Responsibility |
 | --- | --- |
 | `AccessControl.Contracts` | Decision, policy, entitlement, and catalog transport types |
 | `AccessControl.Client` | Endpoint catalog registration, decision HTTP client, and fail-closed ASP.NET Core middleware |
 | `UserManagement.Contracts` | User, role, organization, and resolution transport types and claim names |
-| `UserManagement.Client` | User resolution HTTP client, bounded cache, revision polling, and claims middleware |
+| `UserManagement.Client` | User resolution HTTP client, Redis cache, revision polling, and claims middleware |
+| `Shared.Infrastructure` | Redis connection/cache abstraction and optional Azure Key Vault configuration provider |
 | `Common.Persistence` | Validated write actor and shared entity metadata for the two services |
 | `AdminManagement.Security` | Entra administrator authentication and actor identity for the two services |
 
-The client packages depend on their matching contracts packages. `AdminManagement.Security` depends on `Common.Persistence`. All six package IDs use version `0.14.0`. The two service support packages are for server applications; do not install them in browser or consuming API projects unless those projects actually need their server-side types. Version 0.14.0 restores role and entitlement codes in the wire contracts; modules remain absent. Consumers must update together.
+The client packages depend on their matching contracts packages. `UserManagement.Client` depends on `Shared.Infrastructure`; every consuming API using it must configure Redis. `AdminManagement.Security` depends on `Common.Persistence`. All seven package IDs use version `0.17.0`. `Shared.Infrastructure` also exposes `AddSharedKeyVault` for service startup. Role and entitlement codes remain in the wire contracts; modules remain absent. Consumers must update together.
 
 ## Repository layout and local build
 
@@ -22,7 +23,9 @@ dotnet test Shared.slnx -c Release
 dotnet pack Shared.slnx -c Release -o packages
 ```
 
-The pack command writes all six `.nupkg` files to the ignored contents of the tracked `packages` directory. The service repositories reference all six Shared libraries by package ID and version `0.14.0`, including their tests and benchmarks. Copy the package files into each service repository's `.packages` directory and commit them there; neither solution references Shared source projects. Each service's `NuGet.config` maps these package IDs to its own `.packages` directory, so a clean GitHub checkout can restore without a sibling checkout or separate package download. When a private feed is available, update the source mapping and CI credentials instead. Do not commit feed credentials.
+The pack command writes all seven `.nupkg` files to the ignored contents of the tracked `packages` directory. The service repositories reference Shared libraries by package ID and version `0.17.0`, including their tests and benchmarks. Copy the package files into each service repository's `.packages` directory; neither solution references Shared source projects. Each service's `NuGet.config` maps these package IDs to its own `.packages` directory, so a checkout with the package files can restore without a sibling checkout or separate package download. When a private feed is available, update the source mapping and CI credentials instead. Do not commit feed credentials.
+
+Redis entries use an application-specific prefix, a hash of the scoped lookup identity, and a five-second absolute TTL. Each client polls the source database revision through its service; changed revisions select a new cache namespace. Redis errors load from the source rather than granting from an expired entry. Use a bounded Redis deployment (`maxmemory` with an eviction policy); the old per-process `MaximumCachedUsers` setting does not bound Redis.
 
 After providing the package files, run each service suite from its own repository:
 

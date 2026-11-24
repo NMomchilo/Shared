@@ -10,7 +10,7 @@ namespace UserManagement.Tests;
 public sealed class UserManagementExtensionsTests
 {
     [Fact]
-    public void AddUserManagement_RegistersBoundedClientAndConfiguredTimeout()
+    public void AddUserManagement_RegistersRedisClientAndConfiguredTimeout()
     {
         IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?>
@@ -32,9 +32,9 @@ public sealed class UserManagementExtensionsTests
         UserManagementClientOptions options = provider.GetRequiredService<IOptions<UserManagementClientOptions>>().Value;
         Assert.Equal(17, options.MaximumCachedUsers);
         Assert.Equal(TimeSpan.FromSeconds(4), options.CacheLifetime);
-        Assert.Same(provider.GetRequiredService<UserResolutionCache>(),
-            provider.GetRequiredService<IUserManagementClient>());
-        Assert.Contains(provider.GetServices<IHostedService>(), service => service is UserManagementRevisionPoller);
+        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(RedisUserResolutionCache));
+        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(IUserManagementClient));
+        Assert.Contains(services, descriptor => descriptor.ImplementationType == typeof(UserManagementRevisionPoller));
         using HttpClient client = provider.GetRequiredService<IHttpClientFactory>()
             .CreateClient(nameof(HttpUserManagementClient));
         Assert.Equal(TimeSpan.FromSeconds(3), client.Timeout);

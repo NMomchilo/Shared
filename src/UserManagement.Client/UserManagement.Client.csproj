@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UserManagement.Contracts\UserManagement.Contracts.csproj" />
+    <ProjectReference Include="..\Shared.Infrastructure\Shared.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -9,7 +10,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>UserManagement.Client</PackageId>
-    <Version>0.14.0</Version>
+    <Version>0.17.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

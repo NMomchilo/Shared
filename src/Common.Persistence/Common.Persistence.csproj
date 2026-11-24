@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Common.Persistence</PackageId>
-    <Version>0.14.0</Version>
+    <Version>0.17.0</Version>
     <Description>Shared actor and entity metadata primitives for the authorization services.</Description>
   </PropertyGroup>
 </Project>

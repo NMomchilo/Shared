@@ -6,7 +6,7 @@ using UserManagement.Contracts;
 namespace UserManagement.Client;
 
 public sealed class UserResolutionCache(IUserManagementClient source,
-    IOptions<UserManagementClientOptions> options, ILogger<UserResolutionCache> logger) : IUserManagementClient, IDisposable
+    IOptions<UserManagementClientOptions> options, ILogger<UserResolutionCache> logger) : IUserManagementClient, IUserResolutionCacheInvalidator, IDisposable
 {
     private readonly MemoryCache _memory = new(new MemoryCacheOptions { SizeLimit = options.Value.MaximumCachedUsers });
     private readonly Dictionary<string, KeyedGate> _gates = new(StringComparer.Ordinal);

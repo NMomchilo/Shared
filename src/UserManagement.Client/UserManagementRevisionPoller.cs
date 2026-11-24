@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace UserManagement.Client;
 
-public sealed class UserManagementRevisionPoller(HttpUserManagementClient client, UserResolutionCache cache,
+public sealed class UserManagementRevisionPoller(HttpUserManagementClient client, IUserResolutionCacheInvalidator cache,
     IOptions<UserManagementClientOptions> options, ILogger<UserManagementRevisionPoller> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

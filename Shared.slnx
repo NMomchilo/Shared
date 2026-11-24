@@ -4,6 +4,7 @@
     <Project Path="src/AccessControl.Contracts/AccessControl.Contracts.csproj" />
     <Project Path="src/AdminManagement.Security/AdminManagement.Security.csproj" />
     <Project Path="src/Common.Persistence/Common.Persistence.csproj" />
+    <Project Path="src/Shared.Infrastructure/Shared.Infrastructure.csproj" />
     <Project Path="src/UserManagement.Client/UserManagement.Client.csproj" />
     <Project Path="src/UserManagement.Contracts/UserManagement.Contracts.csproj" />
   </Folder>
