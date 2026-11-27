@@ -5,3 +5,4 @@ packages/*.nupkg
 packages/*.snupkg
 TestResults/
 *.trx
+.vs/*

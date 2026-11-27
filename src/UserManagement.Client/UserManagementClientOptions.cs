@@ -4,7 +4,6 @@ public sealed class UserManagementClientOptions
 {
     public const string SectionName = "UserManagement";
     public string ServiceUrl { get; set; } = string.Empty;
-    public string ApiKey { get; set; } = string.Empty;
     public string TenantClaimType { get; set; } = "tenant_id";
     public string DefaultTenantId { get; set; } = "default";
     public string UnitOrganizationIdHeaderName { get; set; } = "X-Unit-Organization-Id";

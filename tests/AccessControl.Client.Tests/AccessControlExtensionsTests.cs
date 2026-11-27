@@ -16,13 +16,12 @@ namespace AccessControl.Tests;
 public sealed class AccessControlExtensionsTests
 {
     [Fact]
-    public void AddAccessControl_BindsConfiguredClientAndRejectsInsecureEndpoint()
+    public void AddAccessControl_BindsConfiguredOptionsAndRejectsInsecureEndpoint()
     {
         IConfiguration valid = Configuration("https://access.example/");
         using ServiceProvider provider = new ServiceCollection().AddAccessControl(valid).BuildServiceProvider();
 
         AccessControlClientOptions options = provider.GetRequiredService<IOptions<AccessControlClientOptions>>().Value;
-        Assert.Equal("decision-key", options.ApiKey);
         Assert.Equal("UserManagement", options.RoleIdentityAuthenticationType);
         Assert.IsType<HttpAccessControlDecisionClient>(provider.GetRequiredService<IAccessControlDecisionClient>());
 
@@ -59,13 +58,12 @@ public sealed class AccessControlExtensionsTests
     }
 
     [Fact]
-    public async Task RegisterAccessControlCatalog_UsesConfiguredServicesAndExistingKeysAsync()
+    public async Task RegisterAccessControlCatalog_UsesConfiguredServicesWithoutKeysAsync()
     {
         List<string> calls = [];
         IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["UserManagement:ServiceUrl"] = "http://localhost:5220/",
-            ["UserManagement:ApiKey"] = new string('u', 32),
             ["UserManagement:AllowInsecureHttpForDevelopment"] = "true"
         }).Build();
         ServiceCollection services = new();
@@ -74,7 +72,7 @@ public sealed class AccessControlExtensionsTests
         services.AddSingleton<IHostEnvironment>(new TestHostEnvironment());
         services.AddSingleton<IOptions<AccessControlClientOptions>>(Options.Create(new AccessControlClientOptions
         {
-            ServiceUrl = "https://access.example/", ApiKey = "access-key"
+            ServiceUrl = "https://access.example/"
         }));
         services.AddSingleton<IHttpClientFactory>(new RecordingHttpClientFactory(calls));
         using ServiceProvider provider = services.BuildServiceProvider();
@@ -155,7 +153,6 @@ public sealed class AccessControlExtensionsTests
     private static IConfiguration Configuration(string url) => new ConfigurationBuilder().AddInMemoryCollection(
         new Dictionary<string, string?>
         {
-            ["AccessControl:ServiceUrl"] = url,
-            ["AccessControl:ApiKey"] = "decision-key"
+            ["AccessControl:ServiceUrl"] = url
         }).Build();
 }

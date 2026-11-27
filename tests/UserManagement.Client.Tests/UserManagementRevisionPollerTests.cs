@@ -19,7 +19,6 @@ public sealed class UserManagementRevisionPollerTests
         UserManagementClientOptions options = new()
         {
             ServiceUrl = "https://user-management.example/",
-            ApiKey = "test-client-key",
             RevisionPollInterval = TimeSpan.FromMilliseconds(10),
             CacheLifetime = TimeSpan.FromSeconds(5)
         };

@@ -35,7 +35,7 @@ public static class EndpointCatalog
     }
 
     public static async Task RegisterAsync(IEnumerable<Endpoint> endpoints, AccessControlClientOptions options,
-        AccessControlCatalogRegistrationOptions registration, string userManagementKey,
+        AccessControlCatalogRegistrationOptions registration,
         HttpClient userManagementClient, HttpClient accessControlClient,
         CancellationToken cancellationToken = default)
     {
@@ -50,7 +50,6 @@ public static class EndpointCatalog
                 Name = registration.UnitOrganizationName
             })
         };
-        organizationRequest.Headers.Add("X-User-Management-Key", userManagementKey);
         using HttpResponseMessage organizationResponse = await userManagementClient.SendAsync(organizationRequest,
             cancellationToken);
         if (!organizationResponse.IsSuccessStatusCode)
@@ -62,7 +61,6 @@ public static class EndpointCatalog
                 registration.UnitOrganizationId,
                 entries.Select(entry => new CatalogEndpoint(entry.HttpMethod, entry.RouteTemplate)).ToArray()))
         };
-        catalogRequest.Headers.Add("X-Access-Control-Key", options.ApiKey);
         using HttpResponseMessage catalogResponse = await accessControlClient.SendAsync(catalogRequest,
             cancellationToken);
         if (!catalogResponse.IsSuccessStatusCode)

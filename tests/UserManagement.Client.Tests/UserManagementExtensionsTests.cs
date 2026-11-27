@@ -16,7 +16,6 @@ public sealed class UserManagementExtensionsTests
             new Dictionary<string, string?>
             {
                 ["UserManagement:ServiceUrl"] = "https://localhost:5220/",
-                ["UserManagement:ApiKey"] = new string('k', 32),
                 ["UserManagement:TimeoutSeconds"] = "3",
                 ["UserManagement:MaximumCachedUsers"] = "17",
                 ["UserManagement:CacheLifetime"] = "00:00:04",
@@ -47,7 +46,6 @@ public sealed class UserManagementExtensionsTests
             new Dictionary<string, string?>
             {
                 ["UserManagement:ServiceUrl"] = "https://localhost:5220/",
-                ["UserManagement:ApiKey"] = new string('k', 32),
                 ["UserManagement:CacheLifetime"] = "00:00:06"
             }).Build();
         ServiceCollection services = new();

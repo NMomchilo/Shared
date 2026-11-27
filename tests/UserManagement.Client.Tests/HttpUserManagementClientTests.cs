@@ -11,14 +11,13 @@ public sealed class HttpUserManagementClientTests
 {
     private static readonly Guid OrganizationId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     [Fact]
-    public async Task ResolveAsync_SendsClientCredentialAndOidToResolutionEndpointAsync()
+    public async Task ResolveAsync_SendsOidWithoutClientKeyAsync()
     {
         RecordingHandler handler = new();
         HttpUserManagementClient sut = new(new SingleClientFactory(handler),
             Options.Create(new UserManagementClientOptions
             {
                 ServiceUrl = "https://user-management.example/",
-                ApiKey = "test-client-key"
             }), NullLogger<HttpUserManagementClient>.Instance);
         UserIdentityRequest request = new("default", OrganizationId, "9155ff4d-2708-4770-b87e-e238645ec5df");
 
@@ -28,18 +27,17 @@ public sealed class HttpUserManagementClientTests
         Assert.Equal(HttpMethod.Post, handler.Method);
         Assert.Equal("/v1/users/resolve", handler.Path);
         Assert.Equal(request.ObjectId, handler.ObjectId);
-        Assert.Equal("test-client-key", handler.Key);
+        Assert.False(handler.KeyPresent);
     }
 
     [Fact]
-    public async Task GetRevisionAsync_SendsClientCredentialAsync()
+    public async Task GetRevisionAsync_WithoutClientKeyAsync()
     {
         RecordingHandler handler = new();
         HttpUserManagementClient sut = new(new SingleClientFactory(handler),
             Options.Create(new UserManagementClientOptions
             {
                 ServiceUrl = "https://user-management.example/",
-                ApiKey = "test-client-key"
             }), NullLogger<HttpUserManagementClient>.Instance);
 
         long revision = await sut.GetRevisionAsync(CancellationToken.None);
@@ -47,7 +45,7 @@ public sealed class HttpUserManagementClientTests
         Assert.Equal(7, revision);
         Assert.Equal(HttpMethod.Get, handler.Method);
         Assert.Equal("/v1/users/revision", handler.Path);
-        Assert.Equal("test-client-key", handler.Key);
+        Assert.False(handler.KeyPresent);
     }
 
     [Fact]
@@ -57,7 +55,7 @@ public sealed class HttpUserManagementClientTests
         HttpUserManagementClient sut = new(new SingleClientFactory(handler),
             Options.Create(new UserManagementClientOptions
             {
-                ServiceUrl = "https://user-management.example/", ApiKey = "test-client-key"
+                ServiceUrl = "https://user-management.example/"
             }), NullLogger<HttpUserManagementClient>.Instance);
         UserIdentityRequest request = new("default", OrganizationId, "9155ff4d-2708-4770-b87e-e238645ec5df");
         await Assert.ThrowsAsync<UnitOrganizationAccessException>(() =>
@@ -70,7 +68,7 @@ public sealed class HttpUserManagementClientTests
         RecordingHandler handler = new() { ForceNotFound = true };
         HttpUserManagementClient sut = new(new SingleClientFactory(handler),
             Options.Create(new UserManagementClientOptions
-            { ServiceUrl = "https://user-management.example/", ApiKey = "test-client-key" }),
+            { ServiceUrl = "https://user-management.example/" }),
             NullLogger<HttpUserManagementClient>.Instance);
         UserIdentityRequest request = new("default", OrganizationId, "9155ff4d-2708-4770-b87e-e238645ec5df");
         await Assert.ThrowsAsync<UserNotProvisionedException>(() =>
@@ -86,7 +84,7 @@ public sealed class HttpUserManagementClientTests
     {
         public HttpMethod? Method { get; private set; }
         public string? Path { get; private set; }
-        public string? Key { get; private set; }
+        public bool KeyPresent { get; private set; }
         public string? ObjectId { get; private set; }
         public bool ForceConflict { get; set; }
         public bool ForceNotFound { get; set; }
@@ -96,7 +94,7 @@ public sealed class HttpUserManagementClientTests
         {
             Method = request.Method;
             Path = request.RequestUri?.AbsolutePath;
-            Key = request.Headers.GetValues("X-User-Management-Key").Single();
+            KeyPresent = request.Headers.Contains("X-User-Management-Key");
             if (ForceConflict) return new HttpResponseMessage(HttpStatusCode.Conflict);
             if (ForceNotFound) return new HttpResponseMessage(HttpStatusCode.NotFound);
             if (request.Method == HttpMethod.Get)

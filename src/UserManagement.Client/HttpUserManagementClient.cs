@@ -18,7 +18,6 @@ public sealed class HttpUserManagementClient(IHttpClientFactory clientFactory,
         {
             Content = JsonContent.Create(request)
         };
-        message.Headers.Add("X-User-Management-Key", options.Value.ApiKey);
         Stopwatch timer = Stopwatch.StartNew();
         using HttpResponseMessage response = await client.SendAsync(message, cancellationToken);
         logger.LogDebug("User resolution HTTP {StatusCode} in {ElapsedMs} ms",
@@ -52,7 +51,6 @@ public sealed class HttpUserManagementClient(IHttpClientFactory clientFactory,
         using HttpClient client = clientFactory.CreateClient(nameof(HttpUserManagementClient));
         using HttpRequestMessage message = new(HttpMethod.Get,
             new Uri(new Uri(options.Value.ServiceUrl), "v1/users/revision"));
-        message.Headers.Add("X-User-Management-Key", options.Value.ApiKey);
         using HttpResponseMessage response = await client.SendAsync(message, cancellationToken);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<long>(cancellationToken);

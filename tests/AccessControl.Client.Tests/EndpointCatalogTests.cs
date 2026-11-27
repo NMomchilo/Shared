@@ -46,31 +46,28 @@ public sealed class EndpointCatalogTests
     }
 
     [Fact]
-    public async Task Register_UsesExistingClientKeysAndRegistersOrganizationFirstAsync()
+    public async Task Register_WithoutKeysRegistersOrganizationFirstAsync()
     {
         List<string> calls = [];
         using HttpClient users = new(new RecordingHandler(request =>
         {
-            calls.Add($"users:{request.Headers.GetValues("X-User-Management-Key").Single()}");
+            calls.Add($"users:{request.RequestUri!.AbsolutePath}:{request.Headers.Contains("X-User-Management-Key")}");
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         })) { BaseAddress = new Uri("https://users.example/") };
         using HttpClient access = new(new RecordingHandler(request =>
         {
-            calls.Add($"access:{request.Headers.GetValues("X-Access-Control-Key").Single()}");
+            calls.Add($"access:{request.RequestUri!.AbsolutePath}:{request.Headers.Contains("X-Access-Control-Key")}");
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         })) { BaseAddress = new Uri("https://access.example/") };
         RouteEndpointBuilder route = new(_ => Task.CompletedTask, RoutePatternFactory.Parse("/customers/{id}"), 0);
         route.Metadata.Add(new HttpMethodMetadata(["GET"]));
-        await EndpointCatalog.RegisterAsync([route.Build()], new AccessControlClientOptions
-        {
-            ApiKey = "existing-access-key"
-        }, new AccessControlCatalogRegistrationOptions
+        await EndpointCatalog.RegisterAsync([route.Build()], new AccessControlClientOptions(), new AccessControlCatalogRegistrationOptions
         {
             TenantId = "default", UnitOrganizationId = Guid.NewGuid(),
             UnitOrganizationName = "Customers"
-        }, "existing-user-key", users, access);
+        }, users, access);
 
-        Assert.Equal(["users:existing-user-key", "access:existing-access-key"], calls);
+        Assert.Equal(["users:/v1/registrations/unit-organizations:False", "access:/v1/registrations/catalog:False"], calls);
     }
 
     private sealed class RecordingHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler

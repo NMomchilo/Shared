@@ -17,12 +17,12 @@ public sealed class HttpAccessControlDecisionClientTests
     public async Task DecideAsync_SendsScopedRequestAndReturnsDecisionAsync()
     {
         DecisionRequest? sent = null;
-        string? key = null;
+        bool keyPresent = true;
         string? path = null;
         RecordingHandler handler = new(async (request, cancellationToken) =>
         {
             sent = await request.Content!.ReadFromJsonAsync<DecisionRequest>(cancellationToken);
-            key = request.Headers.GetValues("X-Access-Control-Key").Single();
+            keyPresent = request.Headers.Contains("X-Access-Control-Key");
             path = request.RequestUri!.AbsolutePath;
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent.Create(new DecisionResponse(true, "Permit")) };
         });
@@ -34,7 +34,7 @@ public sealed class HttpAccessControlDecisionClientTests
 
         Assert.True(decision.Permit);
         Assert.Equal("/base/v1/decisions", path);
-        Assert.Equal("decision-key", key);
+        Assert.False(keyPresent);
         Assert.Equal(Organization, sent?.UnitOrganizationId);
         Assert.Equal("tenant-a", sent?.TenantId);
     }
@@ -58,7 +58,7 @@ public sealed class HttpAccessControlDecisionClientTests
     private static HttpAccessControlDecisionClient CreateClient(HttpMessageHandler handler) =>
         new(new ClientFactory(handler), new HttpContextAccessor(), Options.Create(new AccessControlClientOptions
         {
-            ServiceUrl = "https://access.example/base/", ApiKey = "decision-key"
+            ServiceUrl = "https://access.example/base/"
         }), NullLogger<HttpAccessControlDecisionClient>.Instance);
 
     private sealed class ClientFactory(HttpMessageHandler handler) : IHttpClientFactory

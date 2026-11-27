@@ -13,7 +13,7 @@ public static class UserManagementExtensions
         services.AddSingleton<IValidateOptions<UserManagementClientOptions>, UserManagementClientOptionsValidator>();
         services.AddOptions<UserManagementClientOptions>()
             .Bind(configuration.GetSection(UserManagementClientOptions.SectionName))
-            .Validate(options => !string.IsNullOrWhiteSpace(options.ApiKey) &&
+            .Validate(options =>
                 !string.IsNullOrWhiteSpace(options.TenantClaimType) &&
                 !string.IsNullOrWhiteSpace(options.DefaultTenantId) &&
                 options.DefaultTenantId.Length <= 128 &&
@@ -27,7 +27,7 @@ public static class UserManagementExtensions
                 options.CacheLifetime <= TimeSpan.FromSeconds(5) &&
                 options.RevisionPollInterval > TimeSpan.Zero &&
                 options.RevisionPollInterval <= options.CacheLifetime,
-                "UserManagement requires a service URL, API key, and cache lifetime up to five seconds.")
+                "UserManagement requires a service URL and cache lifetime up to five seconds.")
             .ValidateOnStart();
         services.AddHttpClient(nameof(HttpUserManagementClient), (provider, client) =>
             client.Timeout = TimeSpan.FromSeconds(provider.GetRequiredService<IOptions<UserManagementClientOptions>>()

@@ -16,7 +16,6 @@ public static class AccessControlExtensions
             .Bind(configuration.GetSection(AccessControlClientOptions.SectionName))
             .Validate(options => Uri.TryCreate(options.ServiceUrl, UriKind.Absolute, out Uri? uri) &&
                 uri.Scheme == Uri.UriSchemeHttps &&
-                !string.IsNullOrWhiteSpace(options.ApiKey) &&
                 !string.IsNullOrWhiteSpace(options.TenantClaimType) &&
                 !string.IsNullOrWhiteSpace(options.DefaultTenantId) &&
                 !string.IsNullOrWhiteSpace(options.RoleIdClaimType) &&
@@ -25,7 +24,7 @@ public static class AccessControlExtensions
                 !string.IsNullOrWhiteSpace(options.UnitAdminClaimType) &&
                 options.ExcludedPaths is not null &&
                 options.TimeoutSeconds > 0,
-                "AccessControl requires HTTPS ServiceUrl, ApiKey, tenant settings and a positive timeout.")
+                "AccessControl requires HTTPS ServiceUrl, tenant settings and a positive timeout.")
             .ValidateOnStart();
         services.AddHttpClient(nameof(HttpAccessControlDecisionClient), (provider, client) =>
             client.Timeout = TimeSpan.FromSeconds(provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AccessControlClientOptions>>().Value.TimeoutSeconds));
@@ -51,15 +50,12 @@ public static class AccessControlExtensions
         IConfiguration configuration = app.ServiceProvider.GetRequiredService<IConfiguration>();
         string userManagementUrl = configuration["UserManagement:ServiceUrl"]
             ?? throw new InvalidOperationException("UserManagement:ServiceUrl is required for registration.");
-        string userManagementKey = configuration["UserManagement:ApiKey"]
-            ?? throw new InvalidOperationException("UserManagement:ApiKey is required for registration.");
         IHostEnvironment environment = app.ServiceProvider.GetRequiredService<IHostEnvironment>();
-        if (userManagementKey.Length < 32 ||
-            !Uri.TryCreate(userManagementUrl, UriKind.Absolute, out Uri? userManagementUri) ||
+        if (!Uri.TryCreate(userManagementUrl, UriKind.Absolute, out Uri? userManagementUri) ||
             !(userManagementUri.Scheme == Uri.UriSchemeHttps || environment.IsDevelopment() &&
               configuration.GetValue<bool>("UserManagement:AllowInsecureHttpForDevelopment") &&
               userManagementUri.Scheme == Uri.UriSchemeHttp && userManagementUri.IsLoopback))
-            throw new InvalidOperationException("Registration requires a configured User Management service and client key.");
+            throw new InvalidOperationException("Registration requires a configured User Management service URL.");
 
         IHttpClientFactory factory = app.ServiceProvider.GetRequiredService<IHttpClientFactory>();
         using HttpClient users = factory.CreateClient();
@@ -69,7 +65,7 @@ public static class AccessControlExtensions
         users.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
         access.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
         await EndpointCatalog.RegisterAsync(app.DataSources.SelectMany(source => source.Endpoints), options,
-            registration, userManagementKey, users, access, cancellationToken);
+            registration, users, access, cancellationToken);
         app.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("AccessControl.EndpointCatalog")
             .LogInformation("Registered endpoint catalog for {TenantId} {UnitOrganizationId}",
                 registration.TenantId, registration.UnitOrganizationId);

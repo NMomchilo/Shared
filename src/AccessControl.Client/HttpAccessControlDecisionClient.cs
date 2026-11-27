@@ -19,7 +19,6 @@ public sealed class HttpAccessControlDecisionClient(IHttpClientFactory clientFac
         {
             Content = JsonContent.Create(request)
         };
-        message.Headers.Add("X-Access-Control-Key", options.Value.ApiKey);
         string? authorization = contextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
         if (AuthenticationHeaderValue.TryParse(authorization, out AuthenticationHeaderValue? bearer) &&
             string.Equals(bearer.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase) &&
